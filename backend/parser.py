@@ -87,10 +87,22 @@ async def resolve_video_id(url):
 
 
 async def _fetch_page(video_id, ua=MOBILE_UA):
-    """获取视频页面 HTML"""
+    """获取视频页面 HTML（模拟真实浏览器请求）"""
     url = f"https://www.iesdouyin.com/share/video/{video_id}/"
+    headers = {
+        "User-Agent": ua,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Referer": "https://v.douyin.com/",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-site",
+        "Upgrade-Insecure-Requests": "1",
+    }
     async with httpx.AsyncClient(follow_redirects=True, timeout=15) as client:
-        resp = await client.get(url, headers={"User-Agent": ua})
+        resp = await client.get(url, headers=headers)
         if resp.status_code != 200:
             raise RuntimeError(f"页面请求失败: HTTP {resp.status_code}")
         return resp.text.replace("\\u002F", "/")

@@ -37,7 +37,7 @@ import httpx
 from database import (
     init_db, insert_video, get_video, list_videos, delete_video,
     list_categories, update_category, update_analyze_status, update_analyze_result,
-    find_video_by_url,
+    find_video_by_url, seed_demo_data,
 )
 from parser import parse_douyin_url, extract_url, is_valid_douyin_url
 from category import auto_category
@@ -86,8 +86,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化数据库
+# 初始化数据库 + 演示数据（数据库为空时自动填充）
 init_db()
+seed_demo_data()
 
 # 前端静态文件目录（构建后的 Vue 应用）
 FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
