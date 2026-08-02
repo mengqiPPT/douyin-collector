@@ -16,20 +16,18 @@ venv/
 *.swo
 
 # Database
-backend/data/*.db
+backend/data/
 
 # Node
 frontend/node_modules/
+frontend/dist/
+frontend/package-lock.json
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Temporary files
-*.tmp
-*.log
-
-# Claude
+# Claude / temp
 .claude/
 .dumate/
 
