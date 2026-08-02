@@ -119,6 +119,111 @@ def init_db():
     conn.close()
 
 
+DEMO_VIDEOS = [
+    {
+        "url": "https://v.douyin.com/i2k3jZgF",
+        "video_url": "",
+        "title": "AI 绘画入门教程：Stable Diffusion 零基础教学",
+        "author": "AI创作营",
+        "author_avatar": "",
+        "description": "Stable Diffusion 零基础教学，从安装到出图全流程讲解，包含提示词编写技巧、ControlNet 使用方法、LoRA 模型训练入门。",
+        "tags": ["AI", "绘画", "教程"],
+        "cover_url": "",
+        "category": "科技",
+        "like_count": 18400,
+        "comment_count": 2200,
+        "share_count": 9900,
+        "duration": 180,
+        "analyze_status": "done",
+        "ai_summary": "本视频系统介绍了 Stable Diffusion AI 绘画工具的完整使用流程，涵盖环境搭建、模型选择、提示词编写、ControlNet 控制及 LoRA 训练等核心技能。",
+        "ai_keypoints": ["Stable Diffusion 环境配置与模型下载", "提示词(Prompt)编写技巧与负面提示词", "ControlNet 精准控制构图与姿态", "LoRA 模型训练入门方法", "ComfyUI 工作流基础介绍"],
+        "ai_tags": ["AI绘画", "StableDiffusion", "教程"],
+    },
+    {
+        "url": "https://v.douyin.com/i2k3jZgG",
+        "video_url": "",
+        "title": "Python 自动化办公：用脚本处理 Excel 报表",
+        "author": "编程达人",
+        "author_avatar": "",
+        "description": "手把手教你用 Python 的 openpyxl 和 pandas 库自动化处理 Excel 报表，包含数据读取、批量格式化、图表生成、邮件自动发送等实战技巧。",
+        "tags": ["Python", "Excel", "办公自动化"],
+        "cover_url": "",
+        "category": "编程",
+        "like_count": 12000,
+        "comment_count": 720,
+        "share_count": 2100,
+        "duration": 240,
+        "analyze_status": "done",
+        "ai_summary": "本视频演示了如何用 Python 自动化处理 Excel 报表，从数据读取、批量格式化到图表生成和邮件自动发送，帮助办公人员大幅提升工作效率。",
+        "ai_keypoints": ["openpyxl 库读取和写入 Excel 文件", "pandas 数据清洗与格式化技巧", "批量生成数据图表和可视化", "SMTP 邮件自动发送报表", "实际办公场景案例演示"],
+        "ai_tags": ["Python", "办公自动化", "Excel"],
+    },
+    {
+        "url": "https://v.douyin.com/i2k3jZgH",
+        "video_url": "",
+        "title": "深度工作法：如何在高干扰环境中保持专注",
+        "author": "效率研究所",
+        "author_avatar": "",
+        "description": "深度工作法核心原理解析，番茄工作法进阶版，数字工具断舍离，专注力训练技巧，适合知识工作者和学生群体的效率提升指南。",
+        "tags": ["效率", "专注", "学习方法"],
+        "cover_url": "",
+        "category": "教育",
+        "like_count": 19200,
+        "comment_count": 5500,
+        "share_count": 3000,
+        "duration": 300,
+        "analyze_status": "done",
+        "ai_summary": "本视频解析了深度工作法的核心原理，提供了番茄工作法进阶版、数字工具断舍离策略和专注力训练技巧，帮助用户在干扰环境中提升工作效率。",
+        "ai_keypoints": ["深度工作法核心原理：注意力残余效应", "番茄工作法进阶版：动态调整专注时长", "数字工具断舍离：减少干扰源", "注意力训练：冥想与正念技巧", "环境设计：打造深度工作空间"],
+        "ai_tags": ["效率", "学习方法", "专注力"],
+    },
+]
+
+
+def seed_demo_data():
+    """插入预置演示数据（仅当数据库为空时）
+
+    适用于 Vercel Serverless 环境，实例回收后自动重建演示数据，
+    确保在线 Demo 始终有内容展示。
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # 检查是否已有数据
+    count = cursor.execute("SELECT COUNT(*) FROM videos").fetchone()[0]
+    if count > 0:
+        conn.close()
+        return
+
+    logger.info("数据库为空，插入预置演示数据...")
+    created_at = datetime.now().isoformat(sep=" ", timespec="seconds")
+
+    for demo in DEMO_VIDEOS:
+        analyzed_at = created_at if demo.get("analyze_status") == "done" else ""
+        tags_json = json.dumps(demo.get("tags", []), ensure_ascii=False)
+        keypoints_json = json.dumps(demo.get("ai_keypoints", []), ensure_ascii=False)
+        ai_tags_json = json.dumps(demo.get("ai_tags", []), ensure_ascii=False)
+
+        cursor.execute(
+            """INSERT INTO videos (
+                url, video_url, title, author, author_avatar, description, tags,
+                cover_url, category, created_at, like_count, comment_count, share_count, duration,
+                analyze_status, ai_summary, ai_keypoints, ai_tags, analyzed_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                demo["url"], demo["video_url"], demo["title"], demo["author"],
+                demo["author_avatar"], demo["description"], tags_json,
+                demo["cover_url"], demo["category"], created_at,
+                demo["like_count"], demo["comment_count"], demo["share_count"], demo["duration"],
+                demo["analyze_status"], demo["ai_summary"], keypoints_json, ai_tags_json, analyzed_at
+            ),
+        )
+
+    conn.commit()
+    conn.close()
+    logger.info(f"已插入 {len(DEMO_VIDEOS)} 条预置演示数据")
+
+
 def insert_video(url, video_url, title, author, description, tags, cover_url, category="",
                   author_avatar="", like_count=0, comment_count=0, share_count=0, duration=0):
     """插入一条视频记录"""

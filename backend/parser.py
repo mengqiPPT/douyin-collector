@@ -289,10 +289,17 @@ def _extract_from_simple_parsing(html, video_id):
         result["author_avatar"] = avatar_match.group(1)
 
     # --- 提取互动数据 ---
+    # 使用更精确的正则，确保匹配正确的字段位置
     for name, key in [("digg_count", "like_count"), ("comment_count", "comment_count"), ("share_count", "share_count")]:
-        m = re.search(rf'"{name}"\s*:\s*(\d+)', html)
+        # 优先在 statistics 区块内匹配
+        m = re.search(rf'"statistics"\s*:\s*\{{[^}}]*?"{name}"\s*:\s*(\d+)', html)
         if m:
             result[key] = int(m.group(1))
+        else:
+            # 回退：全局匹配，但要求字段名前有引号
+            m = re.search(rf'"{name}"\s*:\s*(\d+)', html)
+            if m:
+                result[key] = int(m.group(1))
 
     # --- 提取时长 ---
     m = re.search(r'"duration"\s*:\s*(\d+)', html)

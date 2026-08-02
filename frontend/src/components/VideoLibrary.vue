@@ -61,6 +61,7 @@ function handleImgError(e) {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
   margin: 0;
+  align-items: stretch;  /* 确保所有卡片等高对齐 */
 }
 
 .empty-state {

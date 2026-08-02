@@ -178,10 +178,10 @@ function fmtNum(n) {
 .stat-item { display: flex; align-items: center; gap: 3px; }
 .stat-item .el-icon { color: #fe2c55; }
 
-.card-bottom {
+  .card-bottom {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
   padding-top: 10px; border-top: 1px solid #f2f3f5;
-  margin-top: auto;
+  margin-top: auto; min-height: 32px;
 }
 
 .category-pill {
