@@ -118,6 +118,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+    # 首次初始化时插入预置演示数据
+    seed_demo_data()
+
 
 DEMO_VIDEOS = [
     {

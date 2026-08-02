@@ -89,13 +89,6 @@ app.add_middleware(
 # 初始化数据库
 init_db()
 
-# Vercel 环境下自动插入演示数据
-from database import seed_demo_data
-try:
-    seed_demo_data()
-except Exception as e:
-    logger.warning(f"预置演示数据插入失败: {e}")
-
 # 前端静态文件目录（构建后的 Vue 应用）
 FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
 _static_files_available = os.path.isdir(FRONTEND_DIST)
