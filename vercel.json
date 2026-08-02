@@ -1,6 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "pip install --break-system-packages -r backend/requirements.txt && cd frontend && npm install && npm run build",
+  "installCommand": "echo skip",
+  "buildCommand": "pip install --break-system-packages -r requirements.txt && cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.py": {
