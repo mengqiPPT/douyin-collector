@@ -1,0 +1,15 @@
+# Zeabur 部署配置
+# 文档: https://zeabur.com/docs
+
+services:
+  - name: douyin-collector
+    type: python
+    region: hkg        # 香港节点，国内低延迟
+    pythonVersion: "3.12"
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      cd frontend && npm install && npm run build
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    env:
+      DEEPSEEK_API_KEY: ""    # 在 Zeabur 控制台填写
+      QWEN_API_KEY: ""        # 在 Zeabur 控制台填写
