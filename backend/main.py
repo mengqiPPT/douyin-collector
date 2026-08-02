@@ -334,12 +334,11 @@ async def analyze_video(vid: int, background_tasks: BackgroundTasks):
     if video.get("analyze_status") == "analyzing":
         raise HTTPException(status_code=409, detail="正在分析中，请稍候")
 
-    # 检查环境：FFmpeg 是硬性依赖（音频提取必须）
-    if not check_ffmpeg():
-        raise HTTPException(
-            status_code=503,
-            detail="FFmpeg 未安装，无法提取音频。请安装 FFmpeg 后重试。",
-        )
+    # 检查环境：FFmpeg 是可选依赖（音频提取增强分析，但不是必须）
+    ffmpeg_ok = check_ffmpeg()
+    if not ffmpeg_ok:
+        logger.warning("FFmpeg 未安装，视频分析将仅基于元数据生成（不提取音频）")
+        # 不抛出错误，继续执行，只是 video_url 会设为空，analyzer 会跳过音频流程
 
     # 提取必要数据（避免在后台任务中访问已关闭的数据库连接）
     video_url = video.get("video_url", "")
@@ -533,7 +532,7 @@ def env_check():
             "basic_plus": "基础+模式（本地语音识别 + 规则摘要）",
             "basic": "基础模式（仅元数据 + 规则摘要）",
         }.get(mode, "未知"),
-        "can_analyze": ffmpeg_ok,
+        "can_analyze": True,
         # AI Provider 状态
         "ai_providers": _ai_hub.active_providers,
         "ai_multimodal": _ai_hub.has_multimodal,
