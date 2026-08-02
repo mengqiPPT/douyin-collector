@@ -118,8 +118,9 @@ def init_db():
     conn.commit()
     conn.close()
 
-    # 数据库初始化后，自动插入固定演示数据（仅首次）
-    seed_demo_data()
+
+# 演示数据保留但不再自动插入，由用户手动收藏
+DEMO_VIDEOS = [
     {
         "url": "https://v.douyin.com/i2k3jZgF",
         "video_url": "",
