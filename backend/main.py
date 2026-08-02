@@ -91,8 +91,7 @@ init_db()
 
 # 前端静态文件目录（构建后的 Vue 应用）
 FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
-if os.path.isdir(FRONTEND_DIST):
-    app.mount("/app", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
+_static_files_available = os.path.isdir(FRONTEND_DIST)
 
 
 # -------------------------------------------------------------------
@@ -593,6 +592,33 @@ def _serialize_video(v):
     elif not d.get("ai_tags"):
         d["ai_tags"] = []
     return d
+
+
+# -------------------------------------------------------------------
+# 前端 SPA fallback（部署模式：FastAPI 同时服务前端 + API）
+# 必须在所有 API 路由定义之后注册，否则会拦截 API 请求
+# -------------------------------------------------------------------
+if _static_files_available:
+    import mimetypes
+    from starlette.responses import FileResponse
+    from starlette.staticfiles import StaticFiles
+
+    # 挂载静态资源（JS/CSS/图片等）
+    assets_dir = os.path.join(FRONTEND_DIST, "assets")
+    if os.path.isdir(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    # SPA fallback: 非 /api 的 GET 请求返回 index.html
+    @app.get("/{full_path:path}")
+    async def spa_fallback(full_path: str):
+        """所有非 API 路径返回前端 index.html（Vue Router 处理）"""
+        # 跳过 API 路径和静态资源
+        if full_path.startswith("api/") or full_path.startswith("assets/"):
+            raise HTTPException(status_code=404)
+        index_path = os.path.join(FRONTEND_DIST, "index.html")
+        if os.path.isfile(index_path):
+            return FileResponse(index_path, media_type="text/html")
+        return {"message": "前端文件未构建，请运行 npm run build 后重启"}
 
 
 # -------------------------------------------------------------------
