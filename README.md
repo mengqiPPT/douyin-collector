@@ -2,7 +2,7 @@
 
 > 一个基于 FastAPI + Vue3 的抖音视频收藏管理工具，支持自动解析、AI 内容分析、智能分类和全文检索，帮助你将零散的视频收藏转化为可检索、可分析的个人知识库。
 >
-> **在线体验**：[https://mengqihsh.icu](https://mengqihsh.icu)
+> **在线体验**：[https://www.mengqihsh.icu](https://www.mengqihsh.icu)
 
 ---
 
@@ -279,7 +279,7 @@ douyin-collector/
 
 本项目已配置好 Vercel 部署，只需将代码推送到 GitHub，然后在 Vercel 导入项目即可自动部署。
 
-**当前在线地址**：https://mengqihsh.icu
+**当前在线地址**：https://www.mengqihsh.icu
 
 ### 8.2 本地生产部署
 
