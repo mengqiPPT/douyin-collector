@@ -68,8 +68,12 @@
 
     <div class="sidebar-footer" v-if="!collapsed">
       <div class="env-info" v-if="envInfo">
-        <el-icon size="12"><Cpu /></el-icon>
+        <span class="env-dot" :class="{ online: backendOnline, offline: !backendOnline }"></span>
         <span>{{ envModeText }}</span>
+      </div>
+      <div class="env-info offline-hint" v-else>
+        <span class="env-dot offline"></span>
+        <span>后端未连接</span>
       </div>
     </div>
   </aside>
@@ -92,10 +96,12 @@ const props = defineProps({
 
 defineEmits(['toggle', 'navigate', 'go-library', 'collect'])
 
+const backendOnline = computed(() => !!props.envInfo?.mode)
+
 const envModeText = computed(() => {
   const providers = props.envInfo?.ai_providers || []
-  if (providers.length >= 2) return `🤖 DeepSeek + Qwen`
-  if (providers.length === 1) return `🤖 ${providers[0].split('/')[0]}`
+  if (providers.length >= 2) return `DeepSeek + Qwen`
+  if (providers.length === 1) return providers[0].split('/')[0]
   const map = { basic: '基础分析', basic_plus: '增强分析', full: '完整 AI' }
   return map[props.envInfo?.mode] || '未知'
 })
@@ -169,4 +175,10 @@ const envModeText = computed(() => {
   display: flex; align-items: center; gap: 6px;
   font-size: 11px; color: #909399;
 }
+.env-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+}
+.env-dot.online { background: #67c23a; }
+.env-dot.offline { background: #f56c6c; }
+.offline-hint { color: #f56c6c; }
 </style>

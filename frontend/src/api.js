@@ -1,9 +1,27 @@
 import axios from 'axios'
 
+// API 基础地址：优先级 环境变量 > 同源相对路径
+// 开发时 Vite proxy 将 /api 转发到 localhost:8000
+// 部署时设置 VITE_API_BASE=https://your-server.com/api
+const API_BASE = import.meta.env.VITE_API_BASE || '/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   timeout: 30000,
 })
+
+// 响应拦截：统一处理错误，避免白屏
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response) {
+      console.warn(`[API] ${err.response.status} ${err.config?.url}: ${err.response.data?.detail || err.message}`)
+    } else if (err.request) {
+      console.warn(`[API] 后端不可达: ${err.config?.url} — 请确认后端已启动`)
+    }
+    return Promise.reject(err)
+  },
+)
 
 // 收藏视频
 export function collectVideo(shareText) {
@@ -40,7 +58,8 @@ export function updateVideoCategory(id, category) {
 
 // 封面图代理 URL
 export function proxyImageUrl(url) {
-  return `/api/proxy-image?url=${encodeURIComponent(url)}`
+  if (!url) return ''
+  return `${API_BASE}/proxy-image?url=${encodeURIComponent(url)}`
 }
 
 // 触发 AI 分析
