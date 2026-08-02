@@ -89,6 +89,10 @@ app.add_middleware(
 # 初始化数据库
 init_db()
 
+# 自动插入固定演示数据（首次访问时）
+from database import seed_demo_data
+seed_demo_data()
+
 # 前端静态文件目录（构建后的 Vue 应用）
 FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
 _static_files_available = os.path.isdir(FRONTEND_DIST)
