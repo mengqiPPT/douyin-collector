@@ -4,9 +4,22 @@
     @click="$emit('select', video)"
   >
     <div class="card-cover">
-      <img v-if="video.cover_url" :src="coverUrl" :alt="video.title" @error="$emit('img-error', $event)" />
-      <div v-else class="cover-placeholder">
-        <el-icon size="32"><VideoCamera /></el-icon>
+      <img
+        v-if="video.cover_url"
+        :src="coverUrl"
+        :alt="video.title"
+        class="cover-img"
+        :class="{ hidden: !coverLoaded }"
+        @load="onCoverLoad"
+        @error="onCoverError"
+        ref="coverImgRef"
+      />
+      <div v-if="!coverLoaded" class="cover-fallback" :class="fallbackClass">
+        <div class="fallback-content">
+          <el-icon size="28"><VideoCamera /></el-icon>
+          <p class="fallback-title">{{ cleanTitle(video.title) || '视频收藏' }}</p>
+          <span class="fallback-cat" v-if="video.category">{{ video.category }}</span>
+        </div>
       </div>
       <div class="status-corner" :class="video.analyze_status" v-if="video.analyze_status">
         <el-icon v-if="video.analyze_status === 'done'" title="已分析"><CircleCheck /></el-icon>
@@ -51,6 +64,7 @@
 </template>
 
 <script setup>
+import { ref, computed, watch, nextTick } from 'vue'
 import { VideoCamera, CircleCheck, Loading, Clock, StarFilled, ChatDotSquare, Share } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -59,6 +73,42 @@ const props = defineProps({
 })
 
 defineEmits(['select', 'img-error'])
+
+const coverLoaded = ref(false)
+const coverImgRef = ref(null)
+
+function onCoverLoad() { coverLoaded.value = true }
+function onCoverError() { coverLoaded.value = false }
+
+// 切换视频时重置封面状态
+watch(() => props.video?.id, () => {
+  coverLoaded.value = false
+  nextTick(() => {
+    if (props.video?.cover_url && coverImgRef.value?.complete && coverImgRef.value?.naturalWidth > 0) {
+      coverLoaded.value = true
+    }
+  })
+}, { immediate: false })
+
+// 无封面时用分类颜色区分卡片
+const fallbackColors = {
+  'AI内容创作': 'grad-ai',
+  'AI工具应用': 'grad-tool',
+  'AI与数据': 'grad-data',
+  '编程开发': 'grad-dev',
+  '设计创意': 'grad-design',
+  '科技数码': 'grad-tech',
+  '职场商业': 'grad-biz',
+  '学习成长': 'grad-learn',
+  '生活兴趣': 'grad-life',
+  '娱乐综艺': 'grad-fun',
+}
+const fallbackClass = computed(() => {
+  for (const [key, cls] of Object.entries(fallbackColors)) {
+    if ((props.video.category || '').startsWith(key)) return cls
+  }
+  return 'grad-default'
+})
 
 function cleanTitle(title) {
   return (title || '').replace(/#\S+/g, '').trim()
@@ -103,13 +153,43 @@ function fmtNum(n) {
   overflow: hidden; background: #f5f7fa;
 }
 
-.card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
-.video-card:hover .card-cover img { transform: scale(1.03); }
+.cover-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.cover-img.hidden { opacity: 0; position: absolute; }
+.video-card:hover .cover-img { transform: scale(1.03); }
 
-.cover-placeholder {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center; color: #c0c4cc;
+/* 封面加载失败 / 无封面时的渐变文字卡片 */
+.cover-fallback {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; text-align: center;
 }
+.fallback-content {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.fallback-content .el-icon { opacity: 0.5; }
+.fallback-title {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);
+  line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  max-width: 100%;
+}
+.fallback-cat {
+  font-size: 11px; padding: 2px 10px; border-radius: 10px;
+  background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.85);
+}
+
+/* 8 种分类渐变背景色 */
+.grad-ai     { background: linear-gradient(135deg, #667eea, #764ba2); }
+.grad-tool   { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.grad-data   { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.grad-dev    { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.grad-design { background: linear-gradient(135deg, #fa709a, #fee140); }
+.grad-tech   { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+.grad-biz    { background: linear-gradient(135deg, #fccb90, #d57eeb); }
+.grad-learn  { background: linear-gradient(135deg, #96fbc4, #f9f586); }
+.grad-life   { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+.grad-fun    { background: linear-gradient(135deg, #ff9a9e, #fecfef); }
+.grad-default{ background: linear-gradient(135deg, #e0c3fc, #8ec5fc); }
 
 .status-corner {
   position: absolute; top: 10px; right: 10px;
