@@ -119,6 +119,7 @@ def init_db():
     conn.close()
 
 
+# 演示数据保留但不再自动插入，由用户手动收藏
 DEMO_VIDEOS = [
     {
         "url": "https://v.douyin.com/i2k3jZgF",
