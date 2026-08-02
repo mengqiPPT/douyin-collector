@@ -8,7 +8,12 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "videos.db")
+# 数据库路径：Vercel 环境使用 /tmp，本地使用 data/ 目录
+_db_env_path = os.environ.get("DOUYIN_DB_PATH", "")
+if _db_env_path:
+    DB_PATH = _db_env_path
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "videos.db")
 
 
 def get_db_path():
