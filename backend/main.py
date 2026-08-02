@@ -217,28 +217,26 @@ async def collect_video(req: CollectRequest, background_tasks: BackgroundTasks):
     logger.info(f"收藏成功: id={vid} title={info.get('title', '')[:30]}")
 
     # 自动触发 AI 分析（后台异步执行）
-    auto_analyze = False
-    if check_ffmpeg():
-        auto_analyze = True
-        update_analyze_status(vid, "analyzing")
-        tags_for_analysis = info.get("tags", [])
-        background_tasks.add_task(
-            _run_analysis_background,
-            vid=vid,
-            video_url=info.get("video_url", ""),
-            title=info.get("title", ""),
-            author=info.get("author", ""),
-            description=info.get("description", ""),
-            tags=tags_for_analysis,
-            config=AI_CONFIG,
-        )
-        logger.info(f"自动分析已投递: id={vid}")
+    # 收藏后立即开始分析，不依赖 FFmpeg（纯元数据也能分析）
+    update_analyze_status(vid, "analyzing")
+    tags_for_analysis = info.get("tags", [])
+    background_tasks.add_task(
+        _run_analysis_background,
+        vid=vid,
+        video_url=info.get("video_url", ""),
+        title=info.get("title", ""),
+        author=info.get("author", ""),
+        description=info.get("description", ""),
+        tags=tags_for_analysis,
+        config=AI_CONFIG,
+    )
+    logger.info(f"自动分析已投递: id={vid}")
 
     video = get_video(vid)
     return {
-        "message": "收藏成功" + ("，已自动开始 AI 分析" if auto_analyze else ""),
+        "message": "收藏成功，AI 分析已自动开始",
         "video": _serialize_video(video),
-        "auto_analyze": auto_analyze,
+        "auto_analyze": True,
     }
 
 
